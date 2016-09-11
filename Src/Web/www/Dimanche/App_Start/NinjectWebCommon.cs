@@ -1,6 +1,10 @@
 using System;
 using System.Web;
 using Dimanche;
+using Dimanche.Models;
+using Microsoft.AspNet.Identity;
+using Microsoft.AspNet.Identity.EntityFramework;
+using Microsoft.Owin.Security;
 using Microsoft.Web.Infrastructure.DynamicModuleHelper;
 using Ninject;
 using Ninject.Web.Common;
@@ -60,6 +64,14 @@ namespace Dimanche
         /// <param name="kernel">The kernel.</param>
         private static void RegisterServices(IKernel kernel)
         {
+            kernel.Bind<IHttpModule>().To<HttpApplicationInitializationHttpModule>();
+
+            var dbContext = kernel.Get<ApplicationDbContext>();
+            kernel.Bind<IUserStore<ApplicationUser>>().To<UserStore<ApplicationUser>>().WithConstructorArgument("context", dbContext);
+            //kernel.Bind<IRoleStore<IdentityRole>>()
+            //    .To<RoleStore<IdentityRole<IdentityRole>>>()
+            //    .WithConstructorArgument("context", dbContext);
+            kernel.Bind<IAuthenticationManager>().ToMethod(x => HttpContext.Current.GetOwinContext().Authentication);
         }        
     }
 }
